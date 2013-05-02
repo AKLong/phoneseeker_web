@@ -152,7 +152,7 @@ class DB_Functions {
 		$result = mysql_query("select *  FROM  position_data WHERE imei=$imei ORDER BY id DESC LIMIT 1");
 	}else{
 //        $result = mysql_query("SELECT lat, lon, accuracy, provider FROM gps_data WHERE request_id = '$id'  ORDER BY accuracy ASC LIMIT 1");
-	$result = mysql_query("SELECT gps_data.lat, gps_data.lon, gps_data.accuracy, gps_data.provider,  position_data.status, position_data.time
+	$result = mysql_query("SELECT gps_data.lat, gps_data.lon, gps_data.accuracy, gps_data.provider,  position_data.status 
 				FROM position_data, gps_data 
 				WHERE position_data.id = gps_data.request_id  AND position_data.id=$id");
 

@@ -15,14 +15,14 @@ if (isset($_GET["imei"]) && isset($_GET["id"])) {
 
        $res = $db->getLastLocation($imei,$id);
 
-$rows = array();
-while($r = mysql_fetch_assoc($res)) {
-    $rows[] = $r;
-}
-print json_encode($rows);
+//$rows = array();
+//while($r = mysql_fetch_assoc($res)) {
+//    $rows[] = $r;
+//}
+//print json_encode($rows);
 
-//       $row = mysql_fetch_array($res);
-//echo json_encode($row);
+       $row = mysql_fetch_array($res);
+echo json_encode($row);
 
 
 

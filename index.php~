@@ -82,7 +82,7 @@ var posArray = new Array();
 
 
 //********************************************************************//
-function position (type,col,m,lat,lon,accuracy) {
+function position (type,col,m) {
   this.type = type;
   this.lat = 0.0;
   this.lon = 0.0;
@@ -339,8 +339,8 @@ function loadData()
 	    var obj
 	    $.each(json, function() {
   
- 		posArray.push(new position(this.provider,'#00AA00',map,parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy)));
-//		posArray(posArray.length-1).set(parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy)));
+ 		posArray.push(new position(this.provider,'#00AA00',map));
+		posArray(posArray.length-1).set(parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy)));
                obj = this;
 	     })
 
