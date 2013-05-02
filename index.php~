@@ -71,7 +71,7 @@ var updateButton
 var gpsPos;
 var netPos;
 var time="<?php echo $time ?>";
-var provider = "";
+
 var positionReceived = false;
 var waitingForUpdate = false
 
@@ -82,23 +82,14 @@ var posArray = new Array();
 
 
 //********************************************************************//
-function position (type,col,m) {
+function position (type,col,m,lat,lon,accuracy) {
   this.type = type;
-  this.lat = 0.0;
-  this.lon = 0.0;
-  this.accuracy = 0.0;
-
-  this.set = function(lat,lon,accuracy) {
     this.lat=lat;
     this.lon=lon;
     this.accuracy=accuracy;
-    if (this.accuracy > 0 ){
-      this.circle.setCenter(new google.maps.LatLng(this.lat,this.lon));
-      this.circle.setRadius(this.accuracy);
-      this.circle.setVisible(true);
-    }
-  };
-
+  
+  this.col='#00AA00'
+  if (this.type == 'network') { this.col = '#AA0000'}
 
   this.circle = new google.maps.Circle({
     map: m,
@@ -107,10 +98,19 @@ function position (type,col,m) {
 	fillOpacity:0.05,
 	strokeWeight:1,
 	strokeOpacity:0.5,
-	strokeColor:col
+	strokeColor:this.col
 
 	});
   ;
+   if (this.accuracy > 0 ){
+      this.circle.setCenter(new google.maps.LatLng(this.lat,this.lon));
+      this.circle.setRadius(this.accuracy);
+      this.circle.setVisible(true);
+    }
+
+ this.remove = function() {
+      this.circle.setVisible(false);
+  };
 
 }
 
@@ -127,7 +127,7 @@ function comparePos(pos1,pos2){
   }else if (pos1.accuracy >0){
     return pos1;;
 
-  }else if (netPos.accuracy >0){
+  }else if (pos2.accuracy >0){
     return pos2;
  
   }
@@ -166,6 +166,14 @@ function sendPushNotification(id){
 }
 
 
+function clearCircles(){
+	var i;
+	for (i=0;i<posArray.length;i++){
+		posArray[i].remove();	
+	} 
+	posArray=new Array();
+ 
+}
 
 //********************************************************************//
 function addLocationEntry()
@@ -176,8 +184,9 @@ function addLocationEntry()
   marker.setVisible(false);
   infowindow.close();
   dbUpdated=false;
-  gpsPos.circle.setVisible(false);
-  netPos.circle.setVisible(false);
+  //gpsPos.circle.setVisible(false);
+  //netPos.circle.setVisible(false);
+  clearCircles();
   positionReceived=false;
   waitingForUpdate=true;
 
@@ -212,15 +221,15 @@ function initialize() {
   }
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-  gpsPos = new position("gps",'#00AA00',map);
-  netPos = new position("network",'#AA0000',map);
+  //gpsPos = new position("gps",'#00AA00',map);
+  //netPos = new position("network",'#AA0000',map);
 
-  gpsPos.lat=<?php echo $lat ?>;
-  gpsPos.lon=<?php echo $lon ?>;
-  netPos.lat=<?php echo $lat ?>;
-  netPos.lon=<?php echo $lon ?>;
+//  gpsPos.lat=<?php echo $lat ?>;
+//  gpsPos.lon=<?php echo $lon ?>;
+//  netPos.lat=<?php echo $lat ?>;
+//  netPos.lon=<?php echo $lon ?>;
 
-  var latlng = new google.maps.LatLng(netPos.lat,netPos.lon);
+  var latlng = new google.maps.LatLng(<?php echo $lat ?>,<?php echo $lon ?>);
   map.setCenter(latlng);
   marker = new google.maps.Marker({
     map:map
@@ -284,13 +293,15 @@ function panTo(pos){
 //********************************************************************//
 function updateMap(lat,lon){
 
-  panTo(comparePos(gpsPos,netPos));
+//  panTo(comparePos(gpsPos,netPos));
+  panTo(posArray[posArray.length-1]);
 
   dateTimeDiv.innerHTML = time;
 
   if (positionReceived){
     map.controls[google.maps.ControlPosition.CENTER].pop(statusDiv);
-    showMarker(comparePos(gpsPos,netPos));
+//    showMarker(comparePos(gpsPos,netPos));
+    showMarker(posArray[posArray.length-1]);
   }
 }
 
@@ -339,13 +350,12 @@ function loadData()
 	    var obj
 	    $.each(json, function() {
   
- 		posArray.push(new position(this.provider,'#00AA00',map));
-		posArray(posArray.length-1).set(parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy)));
+ 		posArray.push(new position(this.provider,'#00AA00',map,parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy))));
+//		posArray(posArray.length-1).set(parseFloat(this.lat),parseFloat(this.lon),Math.round(parseFloat(this.accuracy)));
                obj = this;
 	     })
 
 //	    gpsPos.set(parseFloat(obj.lat),parseFloat(obj.lon),Math.round(parseFloat(obj.accuracy)));
-	    provider=obj.provider;
 	    time = obj.time;
 	    if (obj.status=="requesting"){
 	      statusDiv.innerHTML =  "Reqesting Position from phone...";
