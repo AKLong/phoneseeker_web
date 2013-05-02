@@ -116,24 +116,20 @@ function position (type,m,lat,lon,accuracy) {
 
 //********************************************************************//
 
-function comparePos(pos1,pos2){
-  if (pos1.accuracy > 0 && pos2.accuracy >0){
-    if (pos1.accuracy > pos2.accuracy){
-      return pos2;
-    }else{
-      return pos1;
+function getBestPos(){
+
+  var i;
+  if (posArray.length==0){ return ""}
+  var pos = posArray[0];
+  for(i=1;i<posArray.length;i++){
+    if (pos.accuracy > 0 && posArray[i].accuracy >0){
+      if (pos.accuracy > posArray[i].accuracy){
+        pos = posArray[i];
+      }
     }
-
-  }else if (pos1.accuracy >0){
-    return pos1;;
-
-  }else if (pos2.accuracy >0){
-    return pos2;
- 
   }
-  return "";
-	
-}
+  return pos;
+ }
 
 //********************************************************************//
 function sendPushNotification(id){
@@ -151,6 +147,7 @@ function sendPushNotification(id){
       },
 	success: function(data, textStatus, xhr) {
 	if (data!="0"){
+	  statusDiv.innerHTML =  "Request Accepted. Waiting for Position...";
 	  update();
 	}else{
 	  alert("Phone is Not Registered");
@@ -294,14 +291,13 @@ function panTo(pos){
 function updateMap(lat,lon){
 
 //  panTo(comparePos(gpsPos,netPos));
-  panTo(posArray[posArray.length-1]);
+  panTo(getBestPos());
 
   dateTimeDiv.innerHTML = time;
 
   if (positionReceived){
     map.controls[google.maps.ControlPosition.CENTER].pop(statusDiv);
-//    showMarker(comparePos(gpsPos,netPos));
-    showMarker(posArray[posArray.length-1]);
+    showMarker(getBestPos());
   }
 }
 
@@ -316,7 +312,7 @@ function updateMap(lat,lon){
 //********************************************************************//
 function update(){
   if (waitingForUpdate==true){
-    loadData("status","status");
+    loadData();
 
     setTimeout("update()",5000);
   }else{
@@ -354,7 +350,6 @@ function loadData()
                obj = this;
 	     })
 	    
-//	    gpsPos.set(parseFloat(obj.lat),parseFloat(obj.lon),Math.round(parseFloat(obj.accuracy)));
 	if (obj != null){	
 	    time = obj.time;
 	    if (obj.status=="requesting"){
